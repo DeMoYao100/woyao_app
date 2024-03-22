@@ -30,8 +30,8 @@ class DBProvider {
           "CREATE TABLE IF NOT EXISTS WoItemList ("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "name TEXT,"
-          "imagePath TEXT,"
-          ")",
+          "imagePath TEXT"
+          ")"
         );
       },
     );

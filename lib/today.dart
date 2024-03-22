@@ -49,10 +49,10 @@ class _TodayState extends State<Today> {
               onPressed: () async {
                 final name = textController.text;
                 if (name.isNotEmpty) {
-                  final newItem = WoItem(name: name, duringTime: "1 hour", startTime: DateTime.now().toString());
+                  final newItem = WoItem(name: name, duringTime: "0", startTime: DateTime.now().toString());
                   await DBProvider.instance.insertWoItem(newItem);
-                  Navigator.of(context).pop(); // 关闭对话框
-                  _initItems(); // 重新加载数据
+                  Navigator.of(context).pop();
+                  _initItems();
                 }
               },
             ),
@@ -87,7 +87,7 @@ class _TodayState extends State<Today> {
             motion: DrawerMotion(),
             children: [
               SlidableAction(
-                onPressed: (context) => _editItemName(item),
+                onPressed: (context) => _editItemDuringTime(item),
                 backgroundColor: const Color.fromARGB(120, 33, 149, 243),
                 icon: Icons.edit,
                 label: 'Edit',
@@ -111,20 +111,47 @@ class _TodayState extends State<Today> {
               ),
             ],
           ),
-          child: ListTile(
-            title: Text(item.name, textAlign: TextAlign.left),
-            onTap: () => navigateToTodayPage(context, item),
-            trailing: item.imagePath != null && item.imagePath!.isNotEmpty
-                ? Container(
-                    width: 50,
-                    height: 50,
-                    child: Image.file(
-                      File(item.imagePath!),
-                      fit: BoxFit.cover,
+          child: Row(
+            children: <Widget>[
+              // 名称和时间信息
+              Expanded(
+                flex: 6, // 分配更多空间给文本
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                  crossAxisAlignment: CrossAxisAlignment.start, // 文本对齐开始处
+                  children: <Widget>[
+                    Text(
+                      item.name,
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  )
-                : null,
+                    Text(
+                      "${item.startTime} during: ${item.duringTime}",
+                      style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)), // 较淡的字体
+                    ),
+                  ],
+                ),
+              ),
+              // 图片或空白占位符
+              Expanded(
+                flex: 1, // 分配空间给图片或占位符
+                child: item.imagePath != null && item.imagePath!.isNotEmpty
+                    ? Container(
+                        width: 50,
+                        height: 50,
+                        child: Image.file(
+                          File(item.imagePath!),
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Container(
+                        width: 50,
+                        height: 50,
+                        color: Colors.transparent, // 可以设置为透明或任何背景色
+                      ),
+              ),
+            ],
           ),
+
         );
       },
     ),
@@ -152,8 +179,8 @@ class _TodayState extends State<Today> {
     }
   }
 
-  Future<void> _editItemName(WoItem item) async {
-    final TextEditingController textController = TextEditingController(text: item.name);
+  Future<void> _editItemDuringTime(WoItem item) async {
+    final TextEditingController textController = TextEditingController(text: item.duringTime);
     final FocusNode focusNode = FocusNode();
 
     showDialog(
@@ -166,19 +193,19 @@ class _TodayState extends State<Today> {
 
         return AlertDialog(
           backgroundColor: Color.fromARGB(158, 118, 248, 255),
-          title: Text('Edit Item'),
+          title: Text('Edit during time'),
           content: TextField(
             controller: textController,
             focusNode: focusNode,
-            decoration: InputDecoration(hintText: "Edit name"),
+            decoration: InputDecoration(hintText: "Edit during time"),
           ),
           actions: [
             TextButton(
               child: Text('Save'),
               onPressed: () async {
-                final name = textController.text;
-                if (name.isNotEmpty && name != item.name) { 
-                  item.name = name; 
+                final duringTime = textController.text;
+                if (duringTime.isNotEmpty && duringTime != item.duringTime) { 
+                  item.duringTime = duringTime; 
                   await DBProvider.instance.updateWoItem(item);
                   Navigator.of(context).pop();
                   _initItems();

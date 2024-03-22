@@ -4,9 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:woyao_app/SearchDelegate.dart';
 import 'package:woyao_app/today.dart';
-import 'initDatabaseList.dart';
+import 'initDatabaseList.dart' as databaseList;
 import 'package:path/path.dart' as path;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'initDatabaseCalender.dart' as databaseCalender;
 
 class AddList extends StatefulWidget {
   @override
@@ -14,7 +15,7 @@ class AddList extends StatefulWidget {
 }
 
 class _AddListState extends State<AddList> {
-  List<WoItem> items = [];
+  List<databaseList.WoItem> items = [];
 
   @override
   void initState() {
@@ -24,7 +25,7 @@ class _AddListState extends State<AddList> {
 
   /// init all items and display them
   Future<void> _initItems() async {
-    final dbProvider = DBProvider.instance;
+    final dbProvider = databaseList.DBProvider.instance;
     final allItems = await dbProvider.queryAllWoItem();
     setState(() {
       items = allItems;
@@ -50,8 +51,8 @@ class _AddListState extends State<AddList> {
               onPressed: () async {
                 final name = textController.text;
                 if (name.isNotEmpty) {
-                  final newItem = WoItem(name: name);
-                  await DBProvider.instance.insertWoItem(newItem);
+                  final newItem = databaseList.WoItem(name: name);
+                  await databaseList.DBProvider.instance.insertWoItem(newItem);
                   Navigator.of(context).pop(); // 关闭对话框
                   _initItems(); // 重新加载数据
                 }
@@ -84,64 +85,65 @@ class _AddListState extends State<AddList> {
         ],
         
       ),
-    body: ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Slidable(
-          key: ValueKey(item.id),
-          startActionPane: ActionPane(
-            motion: DrawerMotion(),
-            children: [
-              SlidableAction(
-                onPressed: (context) => _editItemName(item),
-                backgroundColor: const Color.fromARGB(120, 33, 149, 243),
-                icon: Icons.edit,
-                label: 'Edit',
-              ),
-            ],
-          ),
-          endActionPane: ActionPane(
-            motion: DrawerMotion(),
-            children: [
-              SlidableAction(
-                onPressed: (context) => _deleteItem(item),
-                backgroundColor: const Color.fromARGB(120, 244, 67, 54),
-                icon: Icons.delete,
-                label: 'Delete',
-              ),
-              SlidableAction(
-                onPressed: (context) => _pickAndSaveImage(item),
-                backgroundColor: const Color.fromARGB(120, 76, 175, 79),
-                icon: Icons.image,
-                label: 'Image',
-              ),
-            ],
-          ),
-          child: ListTile(
-            title: Text(item.name, textAlign: TextAlign.left),
-            onTap: () => navigateToTodayPage(context, item),
-            trailing: item.imagePath != null && item.imagePath!.isNotEmpty
-                ? Container(
-                    width: 50,
-                    height: 50,
-                    child: Image.file(
-                      File(item.imagePath!),
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : null,
-          ),
-        );
-      },
-    ),
-  );
-}
-
-  void navigateToTodayPage(BuildContext context, WoItem item) {
-    // Navigator.of(context).push(MaterialPageRoute(builder: (context) => Today(item: item)));
+      body: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Slidable(
+            key: ValueKey(item.id),
+            startActionPane: ActionPane(
+              motion: DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (context) => _editItemName(item),
+                  backgroundColor: const Color.fromARGB(120, 33, 149, 243),
+                  icon: Icons.edit,
+                  label: 'Edit',
+                ),
+              ],
+            ),
+            endActionPane: ActionPane(
+              motion: DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (context) => _deleteItem(item),
+                  backgroundColor: const Color.fromARGB(120, 244, 67, 54),
+                  icon: Icons.delete,
+                  label: 'Delete',
+                ),
+                SlidableAction(
+                  onPressed: (context) => _pickAndSaveImage(item),
+                  backgroundColor: const Color.fromARGB(120, 76, 175, 79),
+                  icon: Icons.image,
+                  label: 'Image',
+                ),
+              ],
+            ),
+            child: ListTile(
+              title: Text(item.name, textAlign: TextAlign.left),
+              onTap: () => navigateToTodayPage(context, item),
+              trailing: item.imagePath != null && item.imagePath!.isNotEmpty
+                  ? Container(
+                      width: 50,
+                      height: 50,
+                      child: Image.file(
+                        File(item.imagePath!),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
   }
-  Future<void> _pickAndSaveImage(WoItem item) async {
+
+  void navigateToTodayPage(BuildContext context, databaseList.WoItem item) async {
+    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
+    await databaseCalender.DBProvider.instance.insertWoItem(newItem);
+  }
+  Future<void> _pickAndSaveImage(databaseList.WoItem item) async {
     final ImagePicker _picker = ImagePicker();
     // 让用户从图库中选择图片。
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -153,13 +155,13 @@ class _AddListState extends State<AddList> {
       final File newImage = await File(image.path).copy(imagePath);
       
       item.imagePath = newImage.path;
-      await DBProvider.instance.updateWoItem(item);
+      await databaseList.DBProvider.instance.updateWoItem(item);
 
       setState(() {});
     }
   }
 
-  Future<void> _editItemName(WoItem item) async {
+  Future<void> _editItemName(databaseList.WoItem item) async {
     final TextEditingController textController = TextEditingController(text: item.name);
     final FocusNode focusNode = FocusNode();
 
@@ -186,7 +188,7 @@ class _AddListState extends State<AddList> {
                 final name = textController.text;
                 if (name.isNotEmpty && name != item.name) { 
                   item.name = name; 
-                  await DBProvider.instance.updateWoItem(item);
+                  await databaseList.DBProvider.instance.updateWoItem(item);
                   Navigator.of(context).pop();
                   _initItems();
                 }
@@ -198,8 +200,8 @@ class _AddListState extends State<AddList> {
     );
   }
 
-  Future<void> _deleteItem(WoItem item) async {
-    await DBProvider.instance.deleteWoItem(item.id!);
+  Future<void> _deleteItem(databaseList.WoItem item) async {
+    await databaseList.DBProvider.instance.deleteWoItem(item.id!);
     _initItems();
   }
 }

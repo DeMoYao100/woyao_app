@@ -5,6 +5,15 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/widgets.dart';
 
 
+// void main() async{
+//   WidgetsFlutterBinding.ensureInitialized(); 
+//   final newItem = WoItem(name: "test", duringTime: "0", startTime: DateTime.now().toString(),imagePath: "test");
+//   final dbProvider = DBProvider.instance;
+//   await dbProvider.insertWoItem(newItem); // 等待插入完成
+//   await dbProvider.queryAllWoItem(); 
+// }
+
+
 class DBProvider {
   static final DBProvider _instance = DBProvider._internal();
   Database? _database;
@@ -27,7 +36,7 @@ class DBProvider {
       version: 1,
       onCreate: (db, version) async {
         await db.execute(
-          "CREATE TABLE IF NOT EXISTS WoItemList ("
+          "CREATE TABLE IF NOT EXISTS WoItemCalender ("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "name TEXT,"
           "imagePath TEXT,"
@@ -42,7 +51,7 @@ class DBProvider {
   Future<void> insertWoItem(WoItem woItem) async {
     final db = await database;
     await db.insert(
-      'WoItemList', 
+      'WoItemCalender', 
       woItem.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -50,7 +59,7 @@ class DBProvider {
 
   Future<List<WoItem>> queryAllWoItem() async{
     final db = await database;
-    final List<Map<String, Object?>> woItemMaps = await db.query('WoItemList');
+    final List<Map<String, Object?>> woItemMaps = await db.query('WoItemCalender');
     return woItemMaps.map((woItemMap) {
       return WoItem(
         id: woItemMap['id'] as int?,
@@ -65,7 +74,7 @@ class DBProvider {
   Future<void> deleteWoItem(int id) async {
     final db = await database;
     await db.delete(
-      'WoItemList',
+      'WoItemCalender',
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -74,7 +83,7 @@ class DBProvider {
   Future<void> updateWoItem(WoItem woItem) async {
     final db = await database;
     await db.update(
-      'WoItemList',
+      'WoItemCalender',
       woItem.toMap(),
       where: 'id = ?',
       whereArgs: [woItem.id],
