@@ -50,7 +50,7 @@ class _AddListState extends State<AddList> {
               onPressed: () async {
                 final name = textController.text;
                 if (name.isNotEmpty) {
-                  final newItem = WoItem(name: name, duringTime: "1 hour", startTime: DateTime.now().toString());
+                  final newItem = WoItem(name: name);
                   await DBProvider.instance.insertWoItem(newItem);
                   Navigator.of(context).pop(); // 关闭对话框
                   _initItems(); // 重新加载数据
@@ -72,14 +72,13 @@ class _AddListState extends State<AddList> {
         title: Text("Add List Item"),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.search), /// 搜索
             onPressed: () {
-              // 调用搜索功能
               showSearch(context: context, delegate: CustomSearchDelegate(items));
             },
           ),
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add),  /// 添加
             onPressed: _addItem,
           ),
         ],

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:woyao_app/SearchDelegate.dart';
+import 'package:woyao_app/today.dart';
 import 'initDatabaseCalender.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -51,8 +51,8 @@ class _TodayState extends State<Today> {
                 if (name.isNotEmpty) {
                   final newItem = WoItem(name: name, duringTime: "1 hour", startTime: DateTime.now().toString());
                   await DBProvider.instance.insertWoItem(newItem);
-                  Navigator.of(context).pop();
-                  _initItems();
+                  Navigator.of(context).pop(); // 关闭对话框
+                  _initItems(); // 重新加载数据
                 }
               },
             ),
@@ -70,12 +70,6 @@ class _TodayState extends State<Today> {
         backgroundColor: const Color.fromARGB(20, 0, 0, 0),
         title: Text("Add List Item"),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(context: context, delegate: CustomSearchDelegate(items));
-            },
-          ),
           IconButton(
             icon: Icon(Icons.add),
             onPressed: _addItem,

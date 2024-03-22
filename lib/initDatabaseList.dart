@@ -31,8 +31,6 @@ class DBProvider {
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "name TEXT,"
           "imagePath TEXT,"
-          "duringTime TEXT,"
-          "startTime TEXT DEFAULT CURRENT_TIMESTAMP"
           ")",
         );
       },
@@ -55,8 +53,6 @@ class DBProvider {
       return WoItem(
         id: woItemMap['id'] as int?,
         name: woItemMap['name'] as String,
-        duringTime: woItemMap['duringTime'] as String,
-        startTime: woItemMap['startTime'] as String,
         imagePath: woItemMap['imagePath'] as String?,
       );
     }).toList();
@@ -87,14 +83,9 @@ class WoItem {
   int? id;
   String name;
   String? imagePath;
-  String duringTime;
-  String startTime;
-
   WoItem({
     this.id,
     required this.name,
-    required this.duringTime,
-    required this.startTime,
     this.imagePath,
   });
 
@@ -102,14 +93,12 @@ class WoItem {
     return {
       'id': id,
       'name': name,
-      'duringTime': duringTime,
       'imagePath': imagePath,
-      'startTime': startTime,
     };
   }
 
   @override
   String toString() {
-    return 'WoItem{id: $id, name: $name, duringTime: $duringTime, imagePath: $imagePath, startTime: $startTime}';
+    return 'WoItem{id: $id, name: $name, imagePath: $imagePath}';
   }
 }
