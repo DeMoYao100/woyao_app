@@ -1,3 +1,11 @@
+# Custom folders to ignore
+/test/*
+/linux/*
+/macos/*
+/windows/*
+/build/*
+/android/*
+
 # Miscellaneous
 *.class
 *.log
