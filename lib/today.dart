@@ -68,7 +68,7 @@ class _TodayState extends State<Today> {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(20, 0, 0, 0),
-        title: Text("Add List Item"),
+        title: Text("Today' s Item"),
         actions: [
           IconButton(
             icon: Icon(Icons.add),

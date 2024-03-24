@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'initDatabaseList.dart';
+import 'initDatabaseCalender.dart' as databaseCalender;
 
 class CustomSearchDelegate extends SearchDelegate {
   final List<WoItem> items;
@@ -30,16 +31,15 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    final results = items.where((item) => item.name.toLowerCase().contains(query.toLowerCase())).toList();
-
+    final results = items.where((item) =>
+      item.name.toLowerCase().contains(query.toLowerCase())).toList();
     return ListView.builder(
       itemCount: results.length,
       itemBuilder: (context, index) {
         return ListTile(
           title: Text(results[index].name),
           onTap: () {
-
-            /// todo: 处理搜索结果的点击事件 
+            navigateToTodayPage(context, results[index]);
             close(context, results[index]);
           },
         );
@@ -58,9 +58,15 @@ class CustomSearchDelegate extends SearchDelegate {
           title: Text(suggestions[index].name),
           onTap: () {
             query = suggestions[index].name;
+            navigateToTodayPage(context, suggestions[index]);
           },
         );
       },
     );
+  }
+
+  void navigateToTodayPage(BuildContext context, WoItem item) async {
+    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
+    await databaseCalender.DBProvider.instance.insertWoItem(newItem);
   }
 }
