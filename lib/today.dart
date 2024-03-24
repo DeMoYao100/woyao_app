@@ -111,50 +111,57 @@ class _TodayState extends State<Today> {
               ),
             ],
           ),
-          child: Row(
-            children: <Widget>[
-              // 名称和时间信息
-              Expanded(
-                flex: 6, // 分配更多空间给文本
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-                  crossAxisAlignment: CrossAxisAlignment.start, // 文本对齐开始处
-                  children: <Widget>[
-                    Text(
-                      item.name,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "${item.startTime} during: ${item.duringTime}",
-                      style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)), // 较淡的字体
-                    ),
-                  ],
-                ),
-              ),
-              // 图片或空白占位符
-              Expanded(
-                flex: 1, // 分配空间给图片或占位符
-                child: item.imagePath != null && item.imagePath!.isNotEmpty
-                    ? Container(
-                        width: 50,
-                        height: 50,
-                        child: Image.file(
-                          File(item.imagePath!),
-                          fit: BoxFit.cover,
+          child: InkWell(
+            onTap: () {
+              _editItemDuringTime(item);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0), 
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 6, 
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                      crossAxisAlignment: CrossAxisAlignment.start, // 文本对齐开始处
+                      children: <Widget>[
+                        Text(
+                          item.name,
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      )
-                    : Container(
-                        width: 50,
-                        height: 50,
-                        color: Colors.transparent, // 可以设置为透明或任何背景色
-                      ),
+                        Text(
+                          "${item.startTime} during: ${item.duringTime}",
+                          style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)), // 较淡的字体
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 图片或空白占位符
+                  Expanded(
+                    flex: 1, // 分配空间给图片或占位符
+                    child: item.imagePath != null && item.imagePath!.isNotEmpty
+                        ? Container(
+                            width: 50,
+                            height: 50,
+                            child: Image.file(
+                              File(item.imagePath!),
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            color: Colors.transparent, // 可以设置为透明或任何背景色
+                          ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-
         );
       },
     ),
+
   );
 }
 

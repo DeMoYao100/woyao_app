@@ -53,8 +53,8 @@ class _AddListState extends State<AddList> {
                 if (name.isNotEmpty) {
                   final newItem = databaseList.WoItem(name: name);
                   await databaseList.DBProvider.instance.insertWoItem(newItem);
-                  Navigator.of(context).pop(); // 关闭对话框
-                  _initItems(); // 重新加载数据
+                  Navigator.of(context).pop();
+                  _initItems();
                 }
               },
             ),
