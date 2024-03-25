@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:woyao_app/initDatabaseCalender.dart';
+import 'package:woyao_app/initDatabaseCalendar.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({Key? key}) : super(key: key);
@@ -92,6 +92,7 @@ class _CalendarState extends State<Calendar> {
                                 ? Image.file(File(woItem.imagePath!))
                                 : null,
                         // 在这里添加其他字段显示，根据需要调整
+                        // todo: onTap: , 显示detail
                       );
                     },
                   )
@@ -108,7 +109,7 @@ class _CalendarState extends State<Calendar> {
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        color: Colors.blue[400],
+        color: const Color.fromARGB(120, 66, 164, 245),
       ),
       width: 16.0,
       height: 16.0,
@@ -129,7 +130,7 @@ class _CalendarState extends State<Calendar> {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
-      _events = {selectedDay: events}; // 更新_events以反映新查询的事件
+      _events = {selectedDay: events};
     });
   }
 }

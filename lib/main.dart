@@ -43,7 +43,6 @@ class MyApp extends StatelessWidget {
                     image: AssetImage("assets/background.png"),
                     fit: BoxFit.cover,
                   ),
-
           ),
           child: child,
         );
