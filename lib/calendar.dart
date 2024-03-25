@@ -131,17 +131,21 @@ class _CalendarState extends State<Calendar> {
                 _onDaySelected(selectedDay, focusedDay);
               },
               calendarStyle: CalendarStyle(      
-              todayTextStyle: TextStyle(color: Colors.white),
-              weekendTextStyle: TextStyle(color: Colors.white),
+                todayTextStyle: TextStyle(color: Colors.white),
+                weekendTextStyle: TextStyle(color: Colors.white),
               ),
               calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  // 不渲染任何事件标记,但是好像没啥用呢
+                  return null;
+                },
                 // 为今天自定义装饰
                 todayBuilder: (context, date, _) {
                   return Container(
                     margin: const EdgeInsets.all(4.0),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(132, 42, 146, 251),
+                      color: Color.fromARGB(132, 251, 42, 234),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -198,28 +202,28 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Widget _buildEventsMarker(DateTime date, List events) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        color: const Color.fromARGB(120, 66, 164, 245),
-      ),
-      width: 16.0,
-      height: 16.0,
-      child: Center(
-        child: Text(
-          '${events.length}',
-          style: TextStyle().copyWith(
-            color: Colors.white,
-            fontSize: 12.0,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildEventsMarker(DateTime date, List events) {
+  //   return AnimatedContainer(
+  //     duration: const Duration(milliseconds: 300),
+  //     decoration: BoxDecoration(
+  //       shape: BoxShape.rectangle,
+  //       color: const Color.fromARGB(120, 66, 164, 245),
+  //     ),
+  //     width: 16.0,
+  //     height: 16.0,
+  //     child: Center(
+  //       child: Text(
+  //         '${events.length}',
+  //         style: TextStyle().copyWith(
+  //           color: Colors.white,
+  //           fontSize: 12.0,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-    void _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
     final events = await DBProvider.instance.queryEventsByDate(selectedDay);
     setState(() {
       _selectedDay = selectedDay;
