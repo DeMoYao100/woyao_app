@@ -14,7 +14,7 @@ class Settings extends StatelessWidget {
         backgroundColor: const Color.fromARGB(20, 0, 0, 0),
         elevation: 0, 
         title: Text(
-          'Settings', // 这里改为了'Settings'，因为看起来你是在设置页面
+          'Settings',
         ),
       ),
       body: Padding(

@@ -81,8 +81,8 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'statistics',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.calendar_month_outlined),
-            icon: Icon(Icons.calendar_month),
+            selectedIcon: Icon(Icons.calendar_month),
+            icon: Icon(Icons.calendar_month_outlined),
             label: 'calender',
           ),
           NavigationDestination(

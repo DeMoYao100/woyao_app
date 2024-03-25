@@ -88,15 +88,15 @@ class _AddListState extends State<AddList> {
       body: ListView.builder(
         itemCount: items.length+1,
         itemBuilder: (context, index) {
-          if (index == items.length) { // Check if it's the last item which is our hint
+          if (index == items.length) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   "press the item & it will be added to today's list",
                   style: TextStyle(
-                    color: Color.fromARGB(131, 49, 105, 248), // Use a light color for the hint
-                    fontSize: 16.0, // Adjust the size as needed
+                    color: Color.fromARGB(131, 49, 105, 248), 
+                    fontSize: 16.0, 
                   ),
                 ),
               ),
@@ -157,7 +157,7 @@ class _AddListState extends State<AddList> {
   }
 
   void navigateToTodayPage(BuildContext context, databaseList.WoItem item) async {
-    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
+    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0:0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
     await databaseCalender.DBProvider.instance.insertWoItem(newItem);
   }
   Future<void> _pickAndSaveImage(databaseList.WoItem item) async {

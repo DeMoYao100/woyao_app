@@ -6,6 +6,9 @@ import 'package:woyao_app/today.dart';
 import 'initDatabaseCalendar.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter/material.dart';
+import 'package:sleek_circular_slider/sleek_circular_slider.dart';
+
 
 class Today extends StatefulWidget {
   @override
@@ -30,6 +33,18 @@ class _TodayState extends State<Today> {
     });
   }
 
+  String formatDuringTime(String duringTime) {
+    // 将duringTime字符串分割成小时和分钟
+    List<String> parts = duringTime.split(':');
+    if (parts.length != 2) {
+      return duringTime;
+    }
+    String hours = parts[0];
+    String minutes = parts[1];
+
+    return "$hours h - $minutes min";
+  }
+
   /// init an new item
   Future<void> _addItem() async {
     final TextEditingController textController = TextEditingController();
@@ -49,7 +64,7 @@ class _TodayState extends State<Today> {
               onPressed: () async {
                 final name = textController.text;
                 if (name.isNotEmpty) {
-                  final newItem = WoItem(name: name, duringTime: "0", startTime: DateTime.now().toString());
+                  final newItem = WoItem(name: name, duringTime: "0:0", startTime: DateTime.now().toString());
                   await DBProvider.instance.insertWoItem(newItem);
                   Navigator.of(context).pop();
                   _initItems();
@@ -130,7 +145,7 @@ class _TodayState extends State<Today> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          "${item.startTime} during: ${item.duringTime}",
+                          "${item.startTime}\nduring: ${formatDuringTime(item.duringTime)}",
                           style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)),
                         ),
                       ],
@@ -187,39 +202,76 @@ class _TodayState extends State<Today> {
   }
 
   Future<void> _editItemDuringTime(WoItem item) async {
-    final TextEditingController textController = TextEditingController(text: item.duringTime);
-    final FocusNode focusNode = FocusNode();
+    // 假设item.duringTime是以 "小时:分钟" 格式存储，如 "2:30"
+    List<String> times = item.duringTime.split(':');
+    double hours = double.parse(times[0]);
+    double minutes = double.parse(times[1]);
+    void _saveChanges() async {
+      final newDuringTime = "${hours.toStringAsFixed(1)}:${minutes.round()}";
+      if (newDuringTime != item.duringTime) {
+        item.duringTime = newDuringTime;
+        await DBProvider.instance.updateWoItem(item);
+        _initItems();
+      }
+    }
 
     showDialog(
       context: context,
-      builder: (context) {
-        Future.delayed(Duration(milliseconds: 100), () {
-          focusNode.requestFocus();
-          textController.selection = TextSelection(baseOffset: 0, extentOffset: textController.text.length);
-        });
-
+      builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Color.fromARGB(158, 118, 248, 255),
-          title: Text('Edit during time'),
-          content: TextField(
-            controller: textController,
-            focusNode: focusNode,
-            decoration: InputDecoration(hintText: "Edit during time"),
-          ),
-          actions: [
-            TextButton(
-              child: Text('Save'),
-              onPressed: () async {
-                final duringTime = textController.text;
-                if (duringTime.isNotEmpty && duringTime != item.duringTime) { 
-                  item.duringTime = duringTime; 
-                  await DBProvider.instance.updateWoItem(item);
-                  Navigator.of(context).pop();
-                  _initItems();
-                }
-              },
+          backgroundColor:Color.fromARGB(189, 211, 255, 247),
+          content: Container(
+            height: 400, // 调整高度以适应内容
+            padding: EdgeInsets.all(10),
+            
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Edit During Time", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 20),
+                SleekCircularSlider(
+                  initialValue: hours * (360 / 5),
+                  max: 360,
+                  appearance: CircularSliderAppearance(
+                    size: 150, 
+                    customWidths: CustomSliderWidths(progressBarWidth: 10),
+                    infoProperties: InfoProperties(
+                        mainLabelStyle: TextStyle(fontSize: 20, color: Colors.black),
+                        modifier: (double value) {
+                          final roundedValue = (value * (5 / 360)).round(); 
+                          return '$roundedValue h';
+                        }),
+                  ),
+                  onChange: (double value) {
+                    hours = (value * (5 / 360)).round().toDouble(); 
+                  },
+                  onChangeEnd: (double value) {
+                    _saveChanges();
+                  },
+                ),
+                SleekCircularSlider(
+                  initialValue: minutes * 6,
+                  max: 360,
+                  appearance: CircularSliderAppearance(
+                    size: 150, // 同样调整大小
+                    customWidths: CustomSliderWidths(progressBarWidth: 10),
+                    infoProperties: InfoProperties(
+                        mainLabelStyle: TextStyle(fontSize: 20, color: Colors.black),
+                        modifier: (double value) {
+                          final roundedValue = (value / 6).round();
+                          return '$roundedValue min';
+                        }),
+                  ),
+                  onChange: (double value) {
+                    minutes = value / 6;
+                  },
+                  onChangeEnd: (double value) {
+                    _saveChanges(); // 当用户完成滑动操作时自动保存
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
