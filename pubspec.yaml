@@ -36,7 +36,8 @@ dependencies:
   sqflite: ^2.3.2
   path: ^1.9.0
   flutter_slidable: ^3.1.0
-
+  table_calendar: ^3.0.3
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

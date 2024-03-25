@@ -24,7 +24,7 @@ class _TodayState extends State<Today> {
   /// init all items and display them
   Future<void> _initItems() async {
     final dbProvider = DBProvider.instance;
-    final allItems = await dbProvider.queryAllWoItem();
+    final allItems = await dbProvider.queryItemsToday();
     setState(() {
       items = allItems;
     });
@@ -122,8 +122,8 @@ class _TodayState extends State<Today> {
                   Expanded(
                     flex: 6, 
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-                      crossAxisAlignment: CrossAxisAlignment.start, // 文本对齐开始处
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
                           item.name,
@@ -131,7 +131,7 @@ class _TodayState extends State<Today> {
                         ),
                         Text(
                           "${item.startTime} during: ${item.duringTime}",
-                          style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)), // 较淡的字体
+                          style: TextStyle(color: Color.fromARGB(255, 17, 123, 119)),
                         ),
                       ],
                     ),

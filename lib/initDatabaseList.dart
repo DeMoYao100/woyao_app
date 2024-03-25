@@ -58,6 +58,70 @@ class DBProvider {
     }).toList();
   }
 
+  Future<List<WoItem>> queryItemsToday() async {
+    final db = await database;
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59).toIso8601String();
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemList',
+      where: '"startTime" BETWEEN ? AND ?',
+      whereArgs: [todayStart, todayEnd],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryItemsThisWeek() async {
+    final db = await database;
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final weekEnd = now.add(Duration(days: DateTime.daysPerWeek - now.weekday));
+
+    final weekStartStr = DateTime(weekStart.year, weekStart.month, weekStart.day).toIso8601String();
+    final weekEndStr = DateTime(weekEnd.year, weekEnd.month, weekEnd.day, 23, 59, 59).toIso8601String();
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemList',
+      where: '"startTime" BETWEEN ? AND ?',
+      whereArgs: [weekStartStr, weekEndStr],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryItemsThisMonth() async {
+    final db = await database;
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1).toIso8601String();
+    final monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59).toIso8601String();
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemList',
+      where: '"startTime" BETWEEN ? AND ?',
+      whereArgs: [monthStart, monthEnd],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+
   Future<void> deleteWoItem(int id) async {
     final db = await database;
     await db.delete(

@@ -3,16 +3,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/widgets.dart';
-
-
-// void main() async{
-//   WidgetsFlutterBinding.ensureInitialized(); 
-//   final newItem = WoItem(name: "test", duringTime: "0", startTime: DateTime.now().toString(),imagePath: "test");
-//   final dbProvider = DBProvider.instance;
-//   await dbProvider.insertWoItem(newItem); // 等待插入完成
-//   await dbProvider.queryAllWoItem(); 
-// }
-
+import 'package:intl/intl.dart';
 
 class DBProvider {
   static final DBProvider _instance = DBProvider._internal();
@@ -70,6 +61,101 @@ class DBProvider {
       );
     }).toList();
   }
+
+    Future<List<WoItem>> queryItemsToday() async {
+    final db = await database;
+    final now = DateTime.now();
+    final dateStr = DateFormat('yyyy-MM-dd').format(now);
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalender',
+      where: 'DATE(startTime) = ?',
+      whereArgs: [dateStr],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryEventsByDate(DateTime date) async {
+    final db = await database; // 确保你有一个获取当前数据库实例的方法
+    // 将DateTime转换为YYYY-MM-DD格式的字符串
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    // 执行查询：选取所有startTime为特定日期的事件
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalender', // 确保这是你的表名
+      where: 'DATE(startTime) = ?',
+      whereArgs: [dateString],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryItemsThisWeek() async {
+    final db = await database;
+    final now = DateTime.now();
+    // 计算周的开始（周一）
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    // 计算周的结束（周日）
+    final weekEnd = now.add(Duration(days: 7 - now.weekday));
+
+    final weekStartStr = DateFormat('yyyy-MM-dd').format(weekStart);
+    final weekEndStr = DateFormat('yyyy-MM-dd').format(weekEnd);
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemList',
+      where: 'DATE(startTime) BETWEEN ? AND ?',
+      whereArgs: [weekStartStr, weekEndStr],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryItemsThisMonth() async {
+    final db = await database;
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final monthEnd = DateTime(now.year, now.month + 1, 0);
+
+    final monthStartStr = DateFormat('yyyy-MM-dd').format(monthStart);
+    final monthEndStr = DateFormat('yyyy-MM-dd').format(monthEnd);
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemList',
+      where: 'DATE(startTime) BETWEEN ? AND ?',
+      whereArgs: [monthStartStr, monthEndStr],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
 
   Future<void> deleteWoItem(int id) async {
     final db = await database;

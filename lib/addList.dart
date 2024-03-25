@@ -86,54 +86,71 @@ class _AddListState extends State<AddList> {
         
       ),
       body: ListView.builder(
-        itemCount: items.length,
+        itemCount: items.length+1,
         itemBuilder: (context, index) {
-          final item = items[index];
-          return Slidable(
-            key: ValueKey(item.id),
-            startActionPane: ActionPane(
-              motion: DrawerMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) => _editItemName(item),
-                  backgroundColor: const Color.fromARGB(120, 33, 149, 243),
-                  icon: Icons.edit,
-                  label: 'Edit',
+          if (index == items.length) { // Check if it's the last item which is our hint
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "press the item & it will be added to today's list",
+                  style: TextStyle(
+                    color: Color.fromARGB(131, 49, 105, 248), // Use a light color for the hint
+                    fontSize: 16.0, // Adjust the size as needed
+                  ),
                 ),
-              ],
-            ),
-            endActionPane: ActionPane(
-              motion: DrawerMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) => _deleteItem(item),
-                  backgroundColor: const Color.fromARGB(120, 244, 67, 54),
-                  icon: Icons.delete,
-                  label: 'Delete',
+              ),
+            );
+          }
+          else{
+            final item = items[index];
+              return Slidable(
+                key: ValueKey(item.id),
+                startActionPane: ActionPane(
+                  motion: DrawerMotion(),
+                  children: [
+                    SlidableAction(
+                      onPressed: (context) => _editItemName(item),
+                      backgroundColor: const Color.fromARGB(120, 33, 149, 243),
+                      icon: Icons.edit,
+                      label: 'Edit',
+                    ),
+                  ],
                 ),
-                SlidableAction(
-                  onPressed: (context) => _pickAndSaveImage(item),
-                  backgroundColor: const Color.fromARGB(120, 76, 175, 79),
-                  icon: Icons.image,
-                  label: 'Image',
+                endActionPane: ActionPane(
+                  motion: DrawerMotion(),
+                  children: [
+                    SlidableAction(
+                      onPressed: (context) => _deleteItem(item),
+                      backgroundColor: const Color.fromARGB(120, 244, 67, 54),
+                      icon: Icons.delete,
+                      label: 'Delete',
+                    ),
+                    SlidableAction(
+                      onPressed: (context) => _pickAndSaveImage(item),
+                      backgroundColor: const Color.fromARGB(120, 76, 175, 79),
+                      icon: Icons.image,
+                      label: 'Image',
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: ListTile(
-              title: Text(item.name, textAlign: TextAlign.left),
-              onTap: () => navigateToTodayPage(context, item),
-              trailing: item.imagePath != null && item.imagePath!.isNotEmpty
-                  ? Container(
-                      width: 50,
-                      height: 50,
-                      child: Image.file(
-                        File(item.imagePath!),
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : null,
-            ),
-          );
+                child: ListTile(
+                  title: Text(item.name, textAlign: TextAlign.left),
+                  onTap: () => navigateToTodayPage(context, item),
+                  trailing: item.imagePath != null && item.imagePath!.isNotEmpty
+                      ? Container(
+                          width: 50,
+                          height: 50,
+                          child: Image.file(
+                            File(item.imagePath!),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : null,
+                ),
+              );
+          }
+          
         },
       ),
     );
