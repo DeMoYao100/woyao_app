@@ -84,10 +84,8 @@ class DBProvider {
 
   Future<List<WoItem>> queryEventsByDate(DateTime date) async {
     final db = await database; // 确保你有一个获取当前数据库实例的方法
-    // 将DateTime转换为YYYY-MM-DD格式的字符串
     final dateString = DateFormat('yyyy-MM-dd').format(date);
 
-    // 执行查询：选取所有startTime为特定日期的事件
     final List<Map<String, dynamic>> woItemMaps = await db.query(
       'WoItemCalender', // 确保这是你的表名
       where: 'DATE(startTime) = ?',
@@ -131,6 +129,27 @@ class DBProvider {
     }).toList();
   }
 
+  Future<List<WoItem>> queryEventsByWeek(DateTime weekStart, DateTime weekEnd) async {
+    final db = await database;
+    final startString = DateFormat('yyyy-MM-dd').format(weekStart);
+    final endString = DateFormat('yyyy-MM-dd').format(weekEnd);
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalender',
+      where: 'DATE(startTime) >= ? AND DATE(startTime) <= ?',
+      whereArgs: [startString, endString],
+    );
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
   Future<List<WoItem>> queryItemsThisMonth() async {
     final db = await database;
     final now = DateTime.now();
@@ -156,7 +175,29 @@ class DBProvider {
     }).toList();
   }
 
+  Future<List<WoItem>> queryEventsByMonth(int year, int month) async {
+    final db = await database;
+    final startDateString = DateFormat('yyyy-MM-dd').format(DateTime(year, month, 1));
+    final endDateString = DateFormat('yyyy-MM-dd').format(DateTime(year, month + 1, 0));
 
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalender',
+      where: '"startTime" BETWEEN ? AND ?',
+      whereArgs: [startDateString, endDateString],
+    );
+
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+ 
   Future<void> deleteWoItem(int id) async {
     final db = await database;
     await db.delete(

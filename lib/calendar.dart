@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:woyao_app/initDatabaseCalendar.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({Key? key}) : super(key: key);
@@ -23,6 +24,66 @@ class _CalendarState extends State<Calendar> {
     _loadWoItems();
   }
 
+  Color _getSectionColor(int index) {
+    // 这里定义一个颜色列表
+    List<Color> colors = [
+      const Color.fromARGB(120, 244, 67, 54),
+      const Color.fromARGB(120, 76, 175, 79),
+      const Color.fromARGB(120, 33, 149, 243),
+      const Color.fromARGB(120, 255, 153, 0),
+      const Color.fromARGB(120, 155, 39, 176),
+      const Color.fromARGB(120, 255, 235, 59),
+    ];
+    return colors[index % colors.length]; // 循环使用颜色列表，防止索引超出范围
+  }
+
+  List<PieChartSectionData> _getPieChartData(DateTime date) {
+    final List<WoItem> dayEvents = _events[date] ?? [];
+    final Map<String, double> durationSum = {};
+
+    for (var event in dayEvents) {
+      final List<String> parts = event.duringTime.split(':');
+      final double hours = double.parse(parts[0]);
+      final double minutes = double.parse(parts[1]);
+      final double duration = hours + minutes / 60; // 转换分钟为小时的小数部分
+
+      durationSum.update(event.name, (value) => value + duration, ifAbsent: () => duration);
+    }
+
+    // 将总时长转换为饼图数据
+    final List<PieChartSectionData> sections = [];
+    int index = 0;
+    durationSum.forEach((name, totalDuration) {
+      sections.add(PieChartSectionData(
+        color: _getSectionColor(index), // 使用index来分配颜色
+        value: totalDuration,
+        title: '$name\n${totalDuration.toStringAsFixed(2)} h', // 格式化显示小时
+        radius: 50,
+      ));
+      index++; // 更新颜色索引
+    });
+
+    return sections;
+  }
+
+
+  Widget _buildPieChart(DateTime date) {
+    return SizedBox(
+      height: 200, 
+      width: double.infinity, // 宽度占满容器宽度
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: PieChart(
+          PieChartData(
+            sections: _getPieChartData(date),
+            centerSpaceRadius: 40,
+            sectionsSpace: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _loadWoItems() async {
     final allWoItems = await DBProvider.instance.queryItemsToday();
     final Map<DateTime, List<WoItem>> loadedEvents = {};
@@ -41,64 +102,97 @@ class _CalendarState extends State<Calendar> {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(20, 0, 0, 0),
-        elevation: 0, 
-        title: Text(
-          'Calendar',
-          style: theme.textTheme.titleLarge?.copyWith(color: Colors.black), 
-        ),
-      ),
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2010, 10, 16),
-            lastDay: DateTime.utc(2030, 3, 14),
-            focusedDay: _focusedDay,
-            eventLoader: (day) => _events[day] ?? [],
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-              _onDaySelected(selectedDay, focusedDay);
-            },
-            calendarStyle: CalendarStyle(
-              // Customize calendar style here
-            ),
-            calendarBuilders: CalendarBuilders(
-              markerBuilder: (context, date, events) {
-                if (events.isNotEmpty) {
-                  return Positioned(
-                    right: 1,
-                    bottom: 1,
-                    child: _buildEventsMarker(date, events),
-                  );
-                }
+      /// 感觉不整洁，先去掉，顶部栏
+      // appBar: AppBar(
+      //   backgroundColor: const Color.fromARGB(20, 0, 0, 0),
+      //   elevation: 0, 
+      //   title: Text(
+      //     'Calendar',
+      //     style: theme.textTheme.titleLarge?.copyWith(color: Colors.black), 
+      //   ),
+      // ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverPadding(
+            padding: EdgeInsets.only(top: 20), 
+          ),
+          SliverToBoxAdapter(
+            child: TableCalendar(
+              firstDay: DateTime.utc(2010, 10, 16),
+              lastDay: DateTime.utc(2030, 3, 14),
+              focusedDay: _focusedDay,
+              eventLoader: (day) => _events[day] ?? [],
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+                _onDaySelected(selectedDay, focusedDay);
               },
+              calendarStyle: CalendarStyle(      
+              todayTextStyle: TextStyle(color: Colors.white),
+              weekendTextStyle: TextStyle(color: Colors.white),
+              ),
+              calendarBuilders: CalendarBuilders(
+                // 为今天自定义装饰
+                todayBuilder: (context, date, _) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(132, 42, 146, 251),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      date.day.toString(),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                },
+                // 为周末自定义装饰
+                defaultBuilder: (context, date, _) {
+                  if (date.weekday == DateTime.saturday || date.weekday == DateTime.sunday) {
+                    return Container(
+                      margin: const EdgeInsets.all(4.0),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(119, 42, 146, 251), 
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        date.day.toString(),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  } else {
+                    return null;
+                  }
+                },
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+              ),
             ),
           ),
-          Expanded(
-            child: _events[_selectedDay]?.isNotEmpty == true
-                ? ListView.builder(
-                    itemCount: _events[_selectedDay]!.length,
-                    itemBuilder: (context, index) {
-                      final woItem = _events[_selectedDay]![index];
-                      return ListTile(
-                        title: Text(woItem.name),
-                        subtitle: Text("${woItem.startTime} for ${woItem.duringTime}"),
-                        leading: woItem.imagePath != null 
-                                ? Image.file(File(woItem.imagePath!))
-                                : null,
-                        // 在这里添加其他字段显示，根据需要调整
-                        // todo: onTap: , 显示detail
-                      );
-                    },
-                  )
-                : Center(child: Text('No Events on Selected Day')),
+          SliverToBoxAdapter(
+            child: _buildPieChart(_selectedDay),
           ),
-
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final woItem = _events[_selectedDay]?[index];
+                return ListTile(
+                  title: Text(woItem?.name ?? ''),
+                  subtitle: Text("${woItem?.startTime} for ${woItem?.duringTime}"),
+                  leading: woItem?.imagePath != null
+                      ? Image.file(File(woItem!.imagePath!))
+                      : null,
+                );
+              },
+              childCount: _events[_selectedDay]?.length ?? 0,
+            ),
+          ),
         ],
       ),
     );

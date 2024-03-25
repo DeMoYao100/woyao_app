@@ -159,7 +159,20 @@ class _AddListState extends State<AddList> {
   void navigateToTodayPage(BuildContext context, databaseList.WoItem item) async {
     final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0:0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
     await databaseCalender.DBProvider.instance.insertWoItem(newItem);
+
+    /// 首先关闭当前显示的SnackBar（如果有的话）
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    /// 显示SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Item added: ${item.name}'),
+        backgroundColor: Color.fromARGB(109, 35, 164, 255).withOpacity(0.5),
+        behavior: SnackBarBehavior.floating, // 使SnackBar浮动显示，而不是紧贴底部
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+
   Future<void> _pickAndSaveImage(databaseList.WoItem item) async {
     final ImagePicker _picker = ImagePicker();
     // 让用户从图库中选择图片。
@@ -203,8 +216,8 @@ class _AddListState extends State<AddList> {
               child: Text('Save'),
               onPressed: () async {
                 final name = textController.text;
-                if (name.isNotEmpty && name != item.name) { 
-                  item.name = name; 
+                if (name.isNotEmpty && name != item.name) {
+                  item.name = name;
                   await databaseList.DBProvider.instance.updateWoItem(item);
                   Navigator.of(context).pop();
                   _initItems();

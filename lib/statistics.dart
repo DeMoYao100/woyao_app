@@ -22,8 +22,8 @@ class Statistics extends StatelessWidget {
         child: ListView(
           children: [
             TextButton(
-              onPressed: () => backgroundManager.selectBackground(),
-              child: Text('Toggle Background', style: TextStyle(color: Colors.blue)),
+              onPressed: () => null,
+              child: Text('', style: TextStyle(color: Colors.blue)),
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
                 backgroundColor: MaterialStateProperty.all(Color.fromARGB(60, 65, 172, 255)),
