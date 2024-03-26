@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'initDatabaseList.dart';
-import 'initDatabaseCalendar.dart' as databaseCalender;
+import 'initDatabaseCalendar.dart' as databaseCalendar;
 
 class CustomSearchDelegate extends SearchDelegate {
   final List<WoItem> items;
@@ -66,7 +66,7 @@ class CustomSearchDelegate extends SearchDelegate {
   }
 
   void navigateToTodayPage(BuildContext context, WoItem item) async {
-    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
-    await databaseCalender.DBProvider.instance.insertWoItem(newItem);
+    final newItem = databaseCalendar.WoItem(name: item.name, duringTime: "0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
+    await databaseCalendar.DBProvider.instance.insertWoItem(newItem);
   }
 }

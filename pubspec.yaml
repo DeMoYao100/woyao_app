@@ -39,7 +39,11 @@ dependencies:
   table_calendar: ^3.0.3
   sleek_circular_slider : ^2.0.1
   fl_chart: ^0.66.2
-  file_picker: ^8.0.0+1
+  file_picker:
+    git:
+      url: https://github.com/melWiss/flutter_file_picker.git
+  permission_handler: ^11.3.0
+  
   
 dev_dependencies:
   flutter_test:

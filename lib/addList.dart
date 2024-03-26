@@ -7,7 +7,7 @@ import 'package:woyao_app/today.dart';
 import 'initDatabaseList.dart' as databaseList;
 import 'package:path/path.dart' as path;
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'initDatabaseCalendar.dart' as databaseCalender;
+import 'initDatabaseCalendar.dart' as databaseCalendar;
 
 class AddList extends StatefulWidget {
   @override
@@ -157,8 +157,8 @@ class _AddListState extends State<AddList> {
   }
 
   void navigateToTodayPage(BuildContext context, databaseList.WoItem item) async {
-    final newItem = databaseCalender.WoItem(name: item.name, duringTime: "0:0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
-    await databaseCalender.DBProvider.instance.insertWoItem(newItem);
+    final newItem = databaseCalendar.WoItem(name: item.name, duringTime: "0:0", startTime: DateTime.now().toString(),imagePath: item.imagePath);
+    await databaseCalendar.DBProvider.instance.insertWoItem(newItem);
 
     /// 首先关闭当前显示的SnackBar（如果有的话）
     ScaffoldMessenger.of(context).hideCurrentSnackBar();

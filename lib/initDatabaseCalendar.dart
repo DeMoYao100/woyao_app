@@ -21,13 +21,13 @@ class DBProvider {
 
   Future<Database> _initDB() async {
     WidgetsFlutterBinding.ensureInitialized();
-    final path = join(await getDatabasesPath(), 'WoItemCalender.db');
+    final path = join(await getDatabasesPath(), 'WoItemCalendar.db');
     return await openDatabase(
       path,
       version: 1,
       onCreate: (db, version) async {
         await db.execute(
-          "CREATE TABLE IF NOT EXISTS WoItemCalender ("
+          "CREATE TABLE IF NOT EXISTS WoItemCalendar ("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "name TEXT,"
           "imagePath TEXT,"
@@ -42,7 +42,7 @@ class DBProvider {
   Future<void> insertWoItem(WoItem woItem) async {
     final db = await database;
     await db.insert(
-      'WoItemCalender', 
+      'WoItemCalendar', 
       woItem.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -50,7 +50,7 @@ class DBProvider {
 
   Future<List<WoItem>> queryAllWoItem() async{
     final db = await database;
-    final List<Map<String, Object?>> woItemMaps = await db.query('WoItemCalender');
+    final List<Map<String, Object?>> woItemMaps = await db.query('WoItemCalendar');
     return woItemMaps.map((woItemMap) {
       return WoItem(
         id: woItemMap['id'] as int?,
@@ -67,7 +67,7 @@ class DBProvider {
     final now = DateTime.now();
     final dateStr = DateFormat('yyyy-MM-dd').format(now);
     final List<Map<String, dynamic>> woItemMaps = await db.query(
-      'WoItemCalender',
+      'WoItemCalendar',
       where: 'DATE(startTime) = ?',
       whereArgs: [dateStr],
     );
@@ -87,7 +87,7 @@ class DBProvider {
     final dateString = DateFormat('yyyy-MM-dd').format(date);
 
     final List<Map<String, dynamic>> woItemMaps = await db.query(
-      'WoItemCalender', // 确保这是你的表名
+      'WoItemCalendar', // 确保这是你的表名
       where: 'DATE(startTime) = ?',
       whereArgs: [dateString],
     );
@@ -135,7 +135,7 @@ class DBProvider {
     final endString = DateFormat('yyyy-MM-dd').format(weekEnd);
 
     final List<Map<String, dynamic>> woItemMaps = await db.query(
-      'WoItemCalender',
+      'WoItemCalendar',
       where: 'DATE(startTime) >= ? AND DATE(startTime) <= ?',
       whereArgs: [startString, endString],
     );
@@ -181,7 +181,7 @@ class DBProvider {
     final endDateString = DateFormat('yyyy-MM-dd').format(DateTime(year, month + 1, 0));
 
     final List<Map<String, dynamic>> woItemMaps = await db.query(
-      'WoItemCalender',
+      'WoItemCalendar',
       where: '"startTime" BETWEEN ? AND ?',
       whereArgs: [startDateString, endDateString],
     );
@@ -201,7 +201,7 @@ class DBProvider {
   Future<void> deleteWoItem(int id) async {
     final db = await database;
     await db.delete(
-      'WoItemCalender',
+      'WoItemCalendar',
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -210,7 +210,7 @@ class DBProvider {
   Future<void> updateWoItem(WoItem woItem) async {
     final db = await database;
     await db.update(
-      'WoItemCalender',
+      'WoItemCalendar',
       woItem.toMap(),
       where: 'id = ?',
       whereArgs: [woItem.id],

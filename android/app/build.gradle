@@ -4,6 +4,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -24,7 +31,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.woyao_app"
-    compileSdk flutter.compileSdkVersion
+    // compileSdk flutter.compileSdkVersion
+    compileSdkVersion 33
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -46,7 +54,9 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        
+        // targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -56,6 +66,21 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+        }
+    }
+
+    signingConfigs {
+        release {
+            keyAlias 'key' // 你的密钥别名
+            keyPassword 'moyao@dubhe' // 你的密钥密码
+            storeFile file('F:\\workoutFlutter\\release-key.jks') // 密钥库文件的路径
+            storePassword 'moyao@dubhe' // 你的密钥库密码
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
         }
     }
 }
