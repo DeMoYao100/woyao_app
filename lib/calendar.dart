@@ -70,7 +70,7 @@ class _CalendarState extends State<Calendar> {
   Widget _buildPieChart(DateTime date) {
     return SizedBox(
       height: 200, 
-      width: double.infinity, // 宽度占满容器宽度
+      width: double.infinity, 
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: PieChart(

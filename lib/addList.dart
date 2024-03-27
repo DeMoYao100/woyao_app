@@ -73,13 +73,13 @@ class _AddListState extends State<AddList> {
         title: Text("Add List Item"),
         actions: [
           IconButton(
-            icon: Icon(Icons.search), /// 搜索
+            icon: Icon(Icons.search), 
             onPressed: () {
               showSearch(context: context, delegate: CustomSearchDelegate(items));
             },
           ),
           IconButton(
-            icon: Icon(Icons.add),  /// 添加
+            icon: Icon(Icons.add),
             onPressed: _addItem,
           ),
         ],

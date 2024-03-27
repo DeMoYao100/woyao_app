@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      // 使用builder来设置背景图
       builder: (context, child) {
         final backgroundManager = Provider.of<BackgroundManager>(context);
         final backgroundPath = backgroundManager.currentBackground;

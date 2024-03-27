@@ -129,16 +129,44 @@ class DBProvider {
     }).toList();
   }
 
-  Future<List<WoItem>> queryEventsByWeek(DateTime weekStart, DateTime weekEnd) async {
+  Future<List<WoItem>> queryEventsByWeek(DateTime selectedDay) async {
     final db = await database;
-    final startString = DateFormat('yyyy-MM-dd').format(weekStart);
-    final endString = DateFormat('yyyy-MM-dd').format(weekEnd);
+    final int weekDay = selectedDay.weekday;
+    final DateTime weekStart = selectedDay.subtract(Duration(days: weekDay - 1));
+    final DateTime weekEnd = weekStart.add(Duration(days: 6));
+    final String startString = DateFormat('yyyy-MM-dd').format(weekStart);
+    final String endString = DateFormat('yyyy-MM-dd').format(weekEnd);
 
     final List<Map<String, dynamic>> woItemMaps = await db.query(
       'WoItemCalendar',
       where: 'DATE(startTime) >= ? AND DATE(startTime) <= ?',
       whereArgs: [startString, endString],
     );
+
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<WoItem>> queryEventsByMonth(DateTime selectedDay) async {
+    final db = await database;
+    final DateTime monthStart = DateTime(selectedDay.year, selectedDay.month, 1);
+    final DateTime monthEnd = DateTime(selectedDay.year, selectedDay.month + 1, 0);
+    final String startString = DateFormat('yyyy-MM-dd').format(monthStart);
+    final String endString = DateFormat('yyyy-MM-dd').format(monthEnd);
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalendar',
+      where: 'DATE(startTime) >= ? AND DATE(startTime) <= ?',
+      whereArgs: [startString, endString],
+    );
+
     return woItemMaps.map((woItemMap) {
       return WoItem(
         id: woItemMap['id'] as int?,
@@ -175,10 +203,12 @@ class DBProvider {
     }).toList();
   }
 
-  Future<List<WoItem>> queryEventsByMonth(int year, int month) async {
+  Future<List<WoItem>> queryEventsByYear(DateTime selectedDay) async {
     final db = await database;
-    final startDateString = DateFormat('yyyy-MM-dd').format(DateTime(year, month, 1));
-    final endDateString = DateFormat('yyyy-MM-dd').format(DateTime(year, month + 1, 0));
+    final DateTime startOfYear = DateTime(selectedDay.year, 1, 1);
+    final DateTime endOfYear = DateTime(selectedDay.year + 1, 1, 0);
+    final String startDateString = DateFormat('yyyy-MM-dd').format(startOfYear);
+    final String endDateString = DateFormat('yyyy-MM-dd').format(endOfYear);
 
     final List<Map<String, dynamic>> woItemMaps = await db.query(
       'WoItemCalendar',
@@ -197,7 +227,29 @@ class DBProvider {
     }).toList();
   }
 
- 
+  Future<List<WoItem>> queryEventsByInterval(DateTime startDay, DateTime endDay) async {
+    final db = await database;
+
+    final String startDateString = DateFormat('yyyy-MM-dd').format(startDay);
+    final String endDateString = DateFormat('yyyy-MM-dd').format(endDay);
+
+    final List<Map<String, dynamic>> woItemMaps = await db.query(
+      'WoItemCalendar',
+      where: '"startTime" BETWEEN ? AND ?', 
+      whereArgs: [startDateString, endDateString],
+    );
+
+    return woItemMaps.map((woItemMap) {
+      return WoItem(
+        id: woItemMap['id'] as int?,
+        name: woItemMap['name'] as String,
+        duringTime: woItemMap['duringTime'] as String,
+        startTime: woItemMap['startTime'] as String,
+        imagePath: woItemMap['imagePath'] as String?,
+      );
+    }).toList();
+  }
+
   Future<void> deleteWoItem(int id) async {
     final db = await database;
     await db.delete(

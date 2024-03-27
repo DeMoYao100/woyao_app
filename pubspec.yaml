@@ -43,6 +43,7 @@ dependencies:
     git:
       url: https://github.com/melWiss/flutter_file_picker.git
   permission_handler: ^11.3.0
+  flutter_picker: ^2.1.0
   
   
 dev_dependencies:
