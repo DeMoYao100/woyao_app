@@ -177,7 +177,7 @@ class _StatisticsState extends State<Statistics> {
   Widget _buildLineChart({required int showDay}) {
     DateTime minX;
     DateTime maxX;
-    int titleNum;
+    int titleNum = 10;
     double minY = 24.0;
     double maxY = 0.0;
     for (var line in _events.lineBarsData ?? []) {
@@ -199,12 +199,14 @@ class _StatisticsState extends State<Statistics> {
       maxX = DateTime(_selectedDay.year + 1, 1, 1);
       titleNum = 12;
     } else {
-      minX = _selectedDay.subtract(Duration(days: showDay));
-      maxX = _selectedDay.add(Duration(days: showDay));
+      minX = _selectedDay.subtract(Duration(days: _selectedDay.weekday - 1));
+      maxX = _selectedDay.add(Duration(days: 7 - _selectedDay.weekday + 1));
       titleNum = 7;
     }
     double intervalX = (maxX.day - minX.day) / (titleNum - 1);
-    double yInterval = ((maxY - minY) / 9).ceilToDouble();
+    double yInterval = ((maxY - minY + 1) / 9).ceilToDouble();
+    final double rawInterval = (maxX.millisecondsSinceEpoch - minX.millisecondsSinceEpoch + 1) / titleNum;
+    final double interval = rawInterval > 0 ? rawInterval : 1;
     return SizedBox(
       height: 250,
       width: 250,
@@ -222,7 +224,7 @@ class _StatisticsState extends State<Statistics> {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  interval: (maxX.millisecondsSinceEpoch - minX.millisecondsSinceEpoch) / (titleNum),
+                  interval: interval,
                   reservedSize: 50,
                   getTitlesWidget: (value, meta) {
                     final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
@@ -250,7 +252,7 @@ class _StatisticsState extends State<Statistics> {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 50,
-                  interval: yInterval,
+                  interval: yInterval + 1,
                   getTitlesWidget: (value, meta) {
                     return Text(value.toInt().toString(),
                       style: TextStyle(
