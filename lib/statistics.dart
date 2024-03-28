@@ -13,15 +13,52 @@ class DateRangeItems {
   DateTime startDate;
   DateTime endDate;
   List<WoItem>? items;
-
+  List<LineChartBarData> lineBarsData = [];
+  
   DateRangeItems({
     required this.startDate,
     required this.endDate,
     this.items,
+    required this.lineBarsData,
   });
 
   Future<void> updateItemsByInterval(DateTime startDay, DateTime endDay) async {
+    // 用于饼图
     items = await DBProvider.instance.queryEventsByInterval(startDay, endDay);
+
+    // 用于折线图
+    Map<String, Map<DateTime, double>> groupedByEvent = {};
+    for (var item in items!) {
+      final eventDate = parseStartTime(item.startTime);
+      final eventDuration = parseDuringTime(item.duringTime);
+      // 确保duringTime转换后是有效数字
+      if (!eventDuration.isNaN && !eventDuration.isInfinite) {
+        groupedByEvent.putIfAbsent(item.name, () => {});
+        groupedByEvent[item.name]!.update(eventDate, (value) => value + eventDuration, ifAbsent: () => eventDuration);
+      }
+    }
+    lineBarsData = [];
+    int lineIndex = 0; 
+    for (var entry in groupedByEvent.entries) {
+      final spots = entry.value.entries.map((e) {
+        final xValue = e.key.millisecondsSinceEpoch.toDouble();
+        final yValue = e.value;
+        return FlSpot(xValue, yValue);
+      }).toList();
+      spots.sort((a, b) => a.x.compareTo(b.x));
+      lineBarsData.add(
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          color: _getSectionColor(lineIndex),
+          barWidth: 2,
+          isStrokeCapRound: true,
+          dotData: FlDotData(show: false),
+          belowBarData: BarAreaData(show: false),
+        )
+      );
+      lineIndex++;
+    }
   }
 }
 
@@ -30,23 +67,6 @@ class Statistics extends StatefulWidget {
   @override
   State<Statistics> createState() => _StatisticsState();
 }
-
-class _StatisticsState extends State<Statistics> {
-  late String _selectedPattern;
-  late DateTime _selectedDay = DateTime.now();
-  late DateRangeItems _events;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedPattern = "";
-    _selectedDay = DateTime.now();
-    _events = DateRangeItems(
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      items: [],
-    );
-  }
 
   Color _getSectionColor(int index) {
     List<Color> colors = [
@@ -58,6 +78,35 @@ class _StatisticsState extends State<Statistics> {
       const Color.fromARGB(120, 255, 235, 59),
     ];
     return colors[index % colors.length]; 
+  }
+
+double parseDuringTime(String duringTime) {
+  // duringTime转换为小时的小数形式
+  List<String> parts = duringTime.split(':');
+  double hours = double.parse(parts[0]);
+  double minutes = double.parse(parts[1]) / 60.0;
+  return hours + minutes;
+}
+
+DateTime parseStartTime(String startTime) {
+  // 根据实际格式解析startTime字符串为DateTime对象
+  return DateFormat('yyyy-MM-dd').parse(startTime);
+}
+
+class _StatisticsState extends State<Statistics> {
+  late DateTime _selectedDay = DateTime.now();
+  late DateRangeItems _events;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = DateTime.now();
+    _events = DateRangeItems(
+      startDate: DateTime.now(),
+      endDate: DateTime.now(),
+      items: [],
+      lineBarsData:[],
+    );
   }
 
   List<PieChartSectionData> _getPieChartData() {
@@ -311,6 +360,7 @@ class _StatisticsState extends State<Statistics> {
       startDate: startDay,
       endDate: endDay,
       items: [],
+      lineBarsData:[],
     );
     await _events.updateItemsByInterval(startDay, endDay);
     setState(() {});
@@ -380,6 +430,69 @@ class _StatisticsState extends State<Statistics> {
                 ),
                 SliverToBoxAdapter(
                   child: _buildPieChart(),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 250,
+                    width: 300,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.8,
+                      child: LineChart(
+                        LineChartData(
+                          minX: _selectedDay.subtract(Duration(days: 4)).millisecondsSinceEpoch.toDouble(),
+                          maxX: _selectedDay.add(Duration(days: 4)).millisecondsSinceEpoch.toDouble(),
+                          lineBarsData: _events.lineBarsData ?? [],
+                          // 配置坐标轴标题
+                          titlesData: FlTitlesData(
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 30,
+                                getTitlesWidget: (value, meta) {
+                                  final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: Text(DateFormat('dd').format(date),
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
+                                      overflow: TextOverflow.ellipsis, // 防止换行
+                                    ),
+                                  );
+                                },
+                              ),
+                              
+                            ),
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 40,
+                                getTitlesWidget: (value, meta) {
+                                  return Text(value.toInt().toString(),
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 10,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            topTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                          ),
+                          gridData: FlGridData(show: false),
+                          borderData: FlBorderData(show: false),
+                          lineTouchData: LineTouchData(enabled: true),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

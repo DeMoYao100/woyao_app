@@ -105,9 +105,7 @@ class DBProvider {
   Future<List<WoItem>> queryItemsThisWeek() async {
     final db = await database;
     final now = DateTime.now();
-    // 计算周的开始（周一）
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
-    // 计算周的结束（周日）
     final weekEnd = now.add(Duration(days: 7 - now.weekday));
 
     final weekStartStr = DateFormat('yyyy-MM-dd').format(weekStart);
