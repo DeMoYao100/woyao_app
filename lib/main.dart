@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:woyao_app/settings.dart';
-import 'package:woyao_app/today.dart';
+import 'package:noyao/settings.dart';
+import 'package:noyao/today.dart';
 import 'calendar.dart';
 import 'background_manager.dart';
 import 'statistics.dart';

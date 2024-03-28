@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:woyao_app/background_manager.dart';
-import 'package:woyao_app/today.dart';
+import 'package:noyao/background_manager.dart';
+import 'package:noyao/today.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
 import 'initDatabaseCalendar.dart';

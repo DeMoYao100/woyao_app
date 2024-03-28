@@ -1,6 +1,6 @@
 {
-    "name": "woyao_app",
-    "short_name": "woyao_app",
+    "name": "noyao",
+    "short_name": "noyao",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

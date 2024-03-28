@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'background_manager.dart'; // 引入背景管理器
 import 'dataExport.dart';
@@ -32,8 +33,8 @@ class Settings extends StatelessWidget {
                 shadowColor: MaterialStateProperty.all(Colors.transparent),
               ),
             ),
-            TextButton( /// 导入数据
-              onPressed: () => exportDatabaseToJson(),
+            TextButton(
+              onPressed: () => exportDatabaseToJson(context),
               child: Text('Export Data', style: TextStyle(color: Colors.blue)),
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
@@ -42,8 +43,8 @@ class Settings extends StatelessWidget {
                 shadowColor: MaterialStateProperty.all(Colors.transparent),
               ),
             ),
-            TextButton( /// 导出数据
-              onPressed: () => importDatabaseFromJson(),
+            TextButton(
+              onPressed: () => importDatabaseFromJson(context),
               child: Text('Import Data', style: TextStyle(color: Colors.blue)),
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),

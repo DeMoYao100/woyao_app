@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:woyao_app/initDatabaseCalendar.dart';
+import 'package:noyao/initDatabaseCalendar.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class Calendar extends StatefulWidget {

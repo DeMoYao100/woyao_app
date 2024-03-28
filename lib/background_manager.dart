@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:woyao_app/imageDatebase.dart';
-import 'package:woyao_app/imageSave.dart';
+import 'package:noyao/imageDatebase.dart';
+import 'package:noyao/imageSave.dart';
 
 class BackgroundManager with ChangeNotifier {
   String? _currentBackground;

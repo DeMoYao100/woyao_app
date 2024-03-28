@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -11,7 +12,7 @@ Future<void> requestPermissions() async {
   }
 }
 
-Future<void> importDatabaseFromJson() async {
+Future<void> importDatabaseFromJson(BuildContext context) async {
   await requestPermissions();
   FilePickerResult? result = await FilePicker.platform.pickFiles();
 
@@ -36,7 +37,7 @@ Future<void> importDatabaseFromJson() async {
 }
 
 
-Future<void> exportDatabaseToJson() async {
+Future<void> exportDatabaseToJson(BuildContext context) async {
 
   Database db = await openDatabase('WoItemCalendar.db');
 
@@ -51,5 +52,12 @@ Future<void> exportDatabaseToJson() async {
   await file.writeAsString(jsonData);
 
   print('Data exported to $path');
-  // 在这里，你可以选择通过UI向用户展示文件路径
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('exported path: ${path}'),
+        backgroundColor: Color.fromARGB(109, 35, 164, 255).withOpacity(0.5),
+        behavior: SnackBarBehavior.floating, 
+        duration: Duration(seconds: 10),
+      ),
+    );
 }
