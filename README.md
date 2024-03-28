@@ -21,3 +21,4 @@ todo:
 
 3.28 发一个小release存档，看看有什么bug
 
+导出路径类似：/storage/emulated/0/Android/data/com.example.woyao_app/files
