@@ -53,7 +53,7 @@ class DateRangeItems {
           color: _getSectionColor(lineIndex),
           barWidth: 2,
           isStrokeCapRound: true,
-          dotData: FlDotData(show: false),
+          dotData: FlDotData(show: true),
           belowBarData: BarAreaData(show: false),
         )
       );
@@ -68,7 +68,7 @@ class Statistics extends StatefulWidget {
   State<Statistics> createState() => _StatisticsState();
 }
 
-  Color _getSectionColor(int index) {
+Color _getSectionColor(int index) {
     List<Color> colors = [
       const Color.fromARGB(120, 244, 67, 54),
       const Color.fromARGB(120, 76, 175, 79),
@@ -134,6 +134,22 @@ class _StatisticsState extends State<Statistics> {
     return sections;
   }
 
+  Widget _buildCustomTextButton({required VoidCallback onPressed, required String buttonText}) {
+    return Padding(
+        padding: EdgeInsets.all(8.0),
+        child: TextButton(
+          onPressed: () => _showWeekPicker(context),
+          child: Text(buttonText, style: TextStyle(color: Colors.blue)),
+          style: ButtonStyle(
+            overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
+            backgroundColor: MaterialStateProperty.all(Color.fromARGB(60, 65, 172, 255)),
+            foregroundColor: MaterialStateProperty.all(Colors.blue),
+            shadowColor: MaterialStateProperty.all(Colors.transparent),
+          ),
+        ),
+      );
+  }
+
   Widget _buildPieChart() {
     return SizedBox(
       height: 200, 
@@ -145,6 +161,77 @@ class _StatisticsState extends State<Statistics> {
             sections: _getPieChartData(),
             centerSpaceRadius: 40,
             sectionsSpace: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLineChart({required int showDay}) {
+    return SizedBox(
+      height: 250,
+      width: 300,
+      child: FractionallySizedBox(
+        widthFactor: 0.8,
+        child: LineChart(
+          LineChartData(
+            minX: _selectedDay.subtract(Duration(days: showDay)).millisecondsSinceEpoch.toDouble(),
+            maxX: _selectedDay.add(Duration(days: showDay)).millisecondsSinceEpoch.toDouble(),
+            lineBarsData: _events.lineBarsData ?? [],
+            // 配置坐标轴标题
+            titlesData: FlTitlesData(
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 30,
+                  getTitlesWidget: (value, meta) {
+                    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                    final isDateInRange = (date.isAfter(_selectedDay.subtract(Duration(days: showDay))) || date.isAtSameMomentAs(_selectedDay.subtract(Duration(days: showDay)))) &&
+                                          (date.isBefore(_selectedDay.add(Duration(days: showDay))) || date.isAtSameMomentAs(_selectedDay.add(Duration(days: showDay))));
+                    if (isDateInRange) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: Text(DateFormat('dd').format(date),
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    } else {
+                      return Text('');
+                    }
+                  },
+                ),
+                
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40,
+                  getTitlesWidget: (value, meta) {
+                    return Text(value.toInt().toString(),
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 10,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              topTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+            ),
+            
+            gridData: FlGridData(show: false),
+            borderData: FlBorderData(show: false),
+            lineTouchData: LineTouchData(enabled: true),
           ),
         ),
       ),
@@ -294,7 +381,6 @@ class _StatisticsState extends State<Statistics> {
                 _selectedDay = newSelectedDay;
                 initChart(DateTime(newSelectedDay.year, newSelectedDay.month, 1), DateTime(newSelectedDay.year, newSelectedDay.month + 1, 1));
               });
-              // _getCurrentWeekIndex();
               print('New selected day: $_selectedDay');
             }).makePicker()
         );
@@ -342,6 +428,17 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
+  void initChart(DateTime startDay, DateTime endDay) async {
+    _events = DateRangeItems(
+      startDate: startDay,
+      endDate: endDay,
+      items: [],
+      lineBarsData:[],
+    );
+    await _events.updateItemsByInterval(startDay, endDay);
+    setState(() {});
+  }
+
   List<String> _generateWeekList() {
     List<String> weekList = [];
     DateTime now = _selectedDay;
@@ -353,17 +450,6 @@ class _StatisticsState extends State<Statistics> {
       weekList.add(weekString);
     }
     return weekList;
-  }
-
-  void initChart(DateTime startDay, DateTime endDay) async {
-    _events = DateRangeItems(
-      startDate: startDay,
-      endDate: endDay,
-      items: [],
-      lineBarsData:[],
-    );
-    await _events.updateItemsByInterval(startDay, endDay);
-    setState(() {});
   }
 
   List<String> _generateMonthList() {
@@ -414,129 +500,48 @@ class _StatisticsState extends State<Statistics> {
             CustomScrollView(
               slivers: <Widget>[
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: TextButton(
-                      onPressed: () => _showWeekPicker(context),
-                      child: Text('Change week', style: TextStyle(color: Colors.blue)),
-                      style: ButtonStyle(
-                        overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
-                        backgroundColor: MaterialStateProperty.all(Color.fromARGB(60, 65, 172, 255)),
-                        foregroundColor: MaterialStateProperty.all(Colors.blue),
-                        shadowColor: MaterialStateProperty.all(Colors.transparent),
-                      ),
-                    ),
+                  child: _buildCustomTextButton(
+                    onPressed: () => _showWeekPicker(context), // 传入你的onPressed回调函数
+                    buttonText: 'Change week', // 传入按钮上的文本
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _buildPieChart(),
                 ),
                 SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 250,
-                    width: 300,
-                    child: FractionallySizedBox(
-                      widthFactor: 0.8,
-                      child: LineChart(
-                        LineChartData(
-                          minX: _selectedDay.subtract(Duration(days: 4)).millisecondsSinceEpoch.toDouble(),
-                          maxX: _selectedDay.add(Duration(days: 4)).millisecondsSinceEpoch.toDouble(),
-                          lineBarsData: _events.lineBarsData ?? [],
-                          // 配置坐标轴标题
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 30,
-                                getTitlesWidget: (value, meta) {
-                                  final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 10.0),
-                                    child: Text(DateFormat('dd').format(date),
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                      overflow: TextOverflow.ellipsis, // 防止换行
-                                    ),
-                                  );
-                                },
-                              ),
-                              
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 40,
-                                getTitlesWidget: (value, meta) {
-                                  return Text(value.toInt().toString(),
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: 10,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            topTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          gridData: FlGridData(show: false),
-                          borderData: FlBorderData(show: false),
-                          lineTouchData: LineTouchData(enabled: true),
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: _buildLineChart(showDay: 4),
                 ),
               ],
             ),
             CustomScrollView(
               slivers: <Widget>[
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: TextButton(
-                      onPressed: () => _showMonthPicker(context),
-                      child: Text('Change month', style: TextStyle(color: Colors.blue)),
-                      style: ButtonStyle(
-                        overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
-                        backgroundColor: MaterialStateProperty.all(Color.fromARGB(60, 65, 172, 255)),
-                        foregroundColor: MaterialStateProperty.all(Colors.blue),
-                        shadowColor: MaterialStateProperty.all(Colors.transparent),
-                      ),
-                    ),
+                  child: _buildCustomTextButton(
+                    onPressed: () => _showMonthPicker(context), // 传入你的onPressed回调函数
+                    buttonText: 'Change month', // 传入按钮上的文本
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _buildPieChart(),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildLineChart(showDay: 15),
                 ),
               ],
             ),
             CustomScrollView(
               slivers: <Widget>[
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: TextButton(
-                      onPressed: () => _showYearPicker(context),
-                      child: Text('Change year', style: TextStyle(color: Colors.blue)),
-                      style: ButtonStyle(
-                        overlayColor: MaterialStateProperty.all(Color.fromARGB(130, 65, 172, 255)),
-                        backgroundColor: MaterialStateProperty.all(Color.fromARGB(60, 65, 172, 255)),
-                        foregroundColor: MaterialStateProperty.all(Colors.blue),
-                        shadowColor: MaterialStateProperty.all(Colors.transparent),
-                      ),
-                    ),
+                  child: _buildCustomTextButton(
+                    onPressed: () => _showYearPicker(context), // 传入你的onPressed回调函数
+                    buttonText: 'Change year', // 传入按钮上的文本
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _buildPieChart(),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildLineChart(showDay: 170),
                 ),
               ],
             ),
