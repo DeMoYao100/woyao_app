@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:woyao_app/background_manager.dart';
@@ -15,12 +17,16 @@ class DateRangeItems {
   List<WoItem>? items;
   List<LineChartBarData> lineBarsData = [];
   
-  DateRangeItems({
-    required this.startDate,
+  DateRangeItems(
+    {    required this.startDate,
     required this.endDate,
     this.items,
     required this.lineBarsData,
   });
+
+  DateTime getStartOfDay(DateTime dateTime) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day);
+  }
 
   Future<void> updateItemsByInterval(DateTime startDay, DateTime endDay) async {
     // 用于饼图
@@ -41,7 +47,8 @@ class DateRangeItems {
     int lineIndex = 0; 
     for (var entry in groupedByEvent.entries) {
       final spots = entry.value.entries.map((e) {
-        final xValue = e.key.millisecondsSinceEpoch.toDouble();
+    final dayStart = getStartOfDay(e.key);
+    final xValue = dayStart.millisecondsSinceEpoch.toDouble();
         final yValue = e.value;
         return FlSpot(xValue, yValue);
       }).toList();
@@ -51,7 +58,7 @@ class DateRangeItems {
           spots: spots,
           isCurved: true,
           color: _getSectionColor(lineIndex),
-          barWidth: 2,
+          barWidth: 1,
           isStrokeCapRound: true,
           dotData: FlDotData(show: true),
           belowBarData: BarAreaData(show: false),
@@ -168,32 +175,65 @@ class _StatisticsState extends State<Statistics> {
   }
 
   Widget _buildLineChart({required int showDay}) {
+    DateTime minX;
+    DateTime maxX;
+    int titleNum;
+    double minY = 24.0;
+    double maxY = 0.0;
+    for (var line in _events.lineBarsData ?? []) {
+      for (var spot in line.spots) {
+        minY = min(minY, spot.y);
+        maxY = max(maxY, spot.y);
+      }
+    }
+    if (showDay == 7) {
+      minX = _selectedDay.subtract(Duration(days: _selectedDay.weekday - 1));
+      maxX = _selectedDay.add(Duration(days: 7 - _selectedDay.weekday + 1));
+      titleNum = 7;
+    } else if (showDay == 30) {
+      minX = DateTime(_selectedDay.year, _selectedDay.month, 1);
+      maxX = DateTime(_selectedDay.year, _selectedDay.month + 1, 1);
+      titleNum = 10;
+    } else if (showDay == 365) {
+      minX = DateTime(_selectedDay.year, 1, 1);
+      maxX = DateTime(_selectedDay.year + 1, 1, 1);
+      titleNum = 12;
+    } else {
+      minX = _selectedDay.subtract(Duration(days: showDay));
+      maxX = _selectedDay.add(Duration(days: showDay));
+      titleNum = 7;
+    }
+    double intervalX = (maxX.day - minX.day) / (titleNum - 1);
+    double yInterval = ((maxY - minY) / 9).ceilToDouble();
     return SizedBox(
       height: 250,
-      width: 300,
+      width: 250,
       child: FractionallySizedBox(
-        widthFactor: 0.8,
+        widthFactor: 0.75,
         child: LineChart(
           LineChartData(
-            minX: _selectedDay.subtract(Duration(days: showDay)).millisecondsSinceEpoch.toDouble(),
-            maxX: _selectedDay.add(Duration(days: showDay)).millisecondsSinceEpoch.toDouble(),
+            minX: minX.millisecondsSinceEpoch.toDouble(),
+            maxX: maxX.millisecondsSinceEpoch.toDouble(),
+            minY: minY,
+            maxY: maxY,
             lineBarsData: _events.lineBarsData ?? [],
             // 配置坐标轴标题
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 30,
+                  interval: (maxX.millisecondsSinceEpoch - minX.millisecondsSinceEpoch) / (titleNum),
+                  reservedSize: 50,
                   getTitlesWidget: (value, meta) {
                     final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                    final isDateInRange = (date.isAfter(_selectedDay.subtract(Duration(days: showDay))) || date.isAtSameMomentAs(_selectedDay.subtract(Duration(days: showDay)))) &&
-                                          (date.isBefore(_selectedDay.add(Duration(days: showDay))) || date.isAtSameMomentAs(_selectedDay.add(Duration(days: showDay))));
+                    final isDateInRange = date.isAfter(minX) && date.isBefore(maxX);
+                    String formatString = showDay < 60 ? "dd" : "MM";
                     if (isDateInRange) {
                       return Padding(
                         padding: const EdgeInsets.only(top: 10.0),
-                        child: Text(DateFormat('dd').format(date),
+                        child: Text(DateFormat(formatString).format(date),
                           style: TextStyle(
-                            color: Colors.blue,
+                            color: const Color.fromARGB(255, 79, 33, 243),
                             fontWeight: FontWeight.bold,
                             fontSize: 10,
                           ),
@@ -205,16 +245,17 @@ class _StatisticsState extends State<Statistics> {
                     }
                   },
                 ),
-                
               ),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40,
+                  reservedSize: 50,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
                     return Text(value.toInt().toString(),
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: const Color.fromARGB(255, 79, 33, 243),
+                        fontWeight: FontWeight.bold,
                         fontSize: 10,
                       ),
                     );
@@ -509,7 +550,7 @@ class _StatisticsState extends State<Statistics> {
                   child: _buildPieChart(),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildLineChart(showDay: 4),
+                  child: _buildLineChart(showDay: 7),
                 ),
               ],
             ),
@@ -525,7 +566,7 @@ class _StatisticsState extends State<Statistics> {
                   child: _buildPieChart(),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildLineChart(showDay: 15),
+                  child: _buildLineChart(showDay: 30),
                 ),
               ],
             ),
@@ -541,7 +582,7 @@ class _StatisticsState extends State<Statistics> {
                   child: _buildPieChart(),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildLineChart(showDay: 170),
+                  child: _buildLineChart(showDay: 365),
                 ),
               ],
             ),
